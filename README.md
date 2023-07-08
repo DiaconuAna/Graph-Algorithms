@@ -5,3 +5,4 @@
 - [Practical Work 3](https://github.com/DiaconuAna/Graph-Algorithms/tree/main/Practical%20Work%203)
 - [Practical Work 4](https://github.com/DiaconuAna/Graph-Algorithms/tree/main/Practical%20Work%204)
 - [Practical Work 5](https://github.com/DiaconuAna/Graph-Algorithms/tree/main/Practical%20Work%205)
+- [Additional Materials](https://github.com/DiaconuAna/Graph-Algorithms/tree/main/Additional%20Materials)
