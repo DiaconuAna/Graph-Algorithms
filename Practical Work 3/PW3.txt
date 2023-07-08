@@ -1,0 +1,157 @@
+"""
+Practical Work 3
+"""
+
+def display_matrix(M,n):
+    """
+    Display a given matrix M with n rows and columns
+    :param M:
+    :param n:
+    :return:
+    """
+    for i in range(0,n):
+        for j in range(0,n):
+            print(M[i][j],end=" ")
+        print()
+    print()
+
+def adjacency_matrix(G):
+    """
+    Computes the adjacency matrix of a graph G based on it's dCost dictionary
+    :param G:
+    :return:
+    """
+    dict_cost = G.getCostDict()
+    n_vertex = G.getVertexNumber()
+    m = [[float('inf') for i in range(0, n_vertex)] for j in range(0, n_vertex)]
+
+    for i in range(0, n_vertex):
+        for j in range(0, n_vertex):
+            if G.checkifEdgeExists(i,j)==1:
+                m[i][j] = dict_cost[(i,j)]
+            if i == j:
+                m[i][j] = 0
+
+    return m
+
+
+def initmatrices(M,D,P,n):
+    """
+    Initializes the distance matrix as well as the path matrix
+    :param M: the adjacency matrix
+    :param D: the distance matrix
+    :param P: the path matrix
+    :param n: the size of the square matrix
+    :return:
+    """
+    D = [[0 for i in range(0,n)] for j in range(0,n)]
+    P = [[None for i in range(0,n)] for j in range(0,n)]
+
+    for i in range(0,n):
+        for j in range(0,n):
+            D[i][j] = M[i][j]
+            if M[i][j] != float('inf'):
+                P[i][j] = j
+
+
+def FloydWarshall(M,D,P,n):
+    """
+    Use Floyd Warshall to find the lowest cost walk between two vertices
+    :param M: the adjacency matrix
+    :param D: the distance matrix
+    :param P: the path matrix
+    :param n: the size of the square matrix
+    :return:
+    """
+
+    D = [[0 for i in range(0, n)] for j in range(0, n)]
+    P = [[0 for i in range(0, n)] for j in range(0, n)]
+
+    for i in range(0, n):
+        for j in range(0, n):
+            D[i][j] = M[i][j]
+            if M[i][j] != float('inf'):
+                P[i][j] = j
+
+    for k in range(0,n):
+        print("\nUsing vertex ", k, "as an intermediate vertex: \n")
+        print("The cost matrix")
+        display_matrix(D,n)
+        print("The path matrix")
+        display_matrix(P,n)
+        for i in range(0,n):
+            for j  in range(0,n):
+                if D[i][k]+D[k][j] < D[i][j]:
+                    D[i][j] = D[i][k]+D[k][j]
+                    P[i][j] = P[i][k]
+
+    return D,P
+
+
+def getpath(D, P, startVertex, endVertex):
+    """
+    Finds the minimum cost path between two vertices
+    :param D: the distance matrix
+    :param P: the path matrix
+    :param startVertex:
+    :param endVertex:
+    :return:
+    """
+    path = []
+
+    #check if there exists a path between the start and the end vertex
+    if D[startVertex][endVertex] == float('inf'):
+        return path
+
+    vert = startVertex
+    while vert != endVertex:
+        if vert == -1:
+            return None
+        path.append(vert)
+        vert = P[vert][endVertex]
+
+    path.append(endVertex)
+    return path
+
+
+
+def PW3():
+    """
+    Write a program that, given a graph with costs that has no negative cost cycles and two vertices, finds a lowest
+    cost walk between the given vertices. The program shall use the Floyd-Warshall algorithm.
+    :return:
+    """
+    G = Graph()
+    ok = 0
+    file_name = input("From where would you like to load the graph? >>")
+    G.loadFromFileInit(file_name)
+    d=[[]]
+    p=[[]]
+    n = G.getVertexNumber()
+    m = adjacency_matrix(G)
+    d,p = FloydWarshall(m, d, p, n)
+
+
+    while ok==0:
+        startVertex = int(input("Pick a start vertex: "))
+        while G.checkifVertexExists(startVertex) == 0:
+            startVertex = int(input("Please pick a valid start vertex: "))
+
+        endVertex = int(input("Pick an end vertex: "))
+        while G.checkifVertexExists(endVertex) == 0:
+            endVertex = int(input("Please pick a valid end vertex: "))
+
+        if (d[startVertex][endVertex] != float('inf')):
+            print("The lowest cost walk between ", startVertex, " and ", endVertex, " has the cost ",
+                  d[startVertex][endVertex])
+            path = getpath(d, p, startVertex, endVertex)
+            for vert in path:
+                print(vert, end=" ")
+            print()
+        else:
+            print("There is no walk from ", startVertex, " to ", endVertex)
+
+        print("Would you like to see the walk for two other vertices? \n0.Yes\n1.No")
+        ok = int(input())
+
+    print("Goodbye!")
