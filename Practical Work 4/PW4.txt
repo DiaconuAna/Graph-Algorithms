@@ -1,0 +1,109 @@
+
+def TopoSortDFS(G, x, sorted, fullyProcessed, inProcess):
+    """
+    Performs a topological sorting using depth-first traversal
+    :param G: the  graph
+    :param x: the vertex
+    :param sorted: a list of vertices in topological sorting order, or null if G has cycles
+    :param fullyProcessed: vertices already processed
+    :param inProcess: vertices currently being processed
+    :return:
+    """
+    inProcess.append(x)
+    inbound =  G.parseInbound(x)
+
+    for y in inbound:
+        if y in inProcess:
+            return False
+        elif y not in fullyProcessed:
+            ok = TopoSortDFS(G, y, sorted, fullyProcessed, inProcess)
+            if not ok:
+                return False
+
+    inProcess.remove(x)
+    sorted.append(x)
+    fullyProcessed.append(x)
+    return True
+
+
+def PW4aux(G):
+    """
+    Check if the graph is a DAG by using depth-first traversal
+    and also performing a topological sorting, if it is the case
+    :param G:
+    :return: the vertices sorted in topological order
+    """
+    sorted = []
+    fullyProcessed = []
+    inProcess = []
+    vertex_list = G.getVertexList
+
+    for vert in vertex_list:
+        if vert not in fullyProcessed:
+            ok = TopoSortDFS(G, vert, sorted, fullyProcessed, inProcess)
+            if not ok:
+                return []
+
+    return sorted
+
+
+def highest_cost_path(G, source, destination, toposort):
+    """
+    Finds a highest cost path between two given vertices, in O(V+E).
+    :param G: the graph
+    :param source: the source vertex
+    :param destination: the destination vertex
+    :param toposort: the vertices sorted in topological order
+    :return: the highest cost path, if it exists
+    """
+    n = len(toposort)
+    dist=[ float('-inf') for i in range (0,n)]
+    dist[source] = 0
+
+    for vert in toposort:
+        if vert == destination:
+            break
+        bound =  G.parseOutbound(vert)
+        for adj in bound:
+            if dist[adj] < (dist[vert] + G.retrieveCost((vert, adj))):
+                dist[adj] = dist[vert] + G.retrieveCost((vert, adj))
+
+    return dist[destination]
+
+
+def PW4():
+    G = Graph()
+    file_name = input("From where would you like to load the graph? >>")
+    G.loadFromFileInit(file_name)
+
+    sorted = PW4aux(G)
+
+    if sorted == []:
+        print("The given graph is not a Directed Acyclic Graph!")
+    else:
+        print("The given graph is a Directed Acyclic Graph!")
+        print("A topological sort of the given graph is: ")
+        for vert in sorted:
+            print(vert, end=" ")
+        print()
+
+        over = 0
+        while not over:
+            source= int(input("Pick a start vertex: "))
+            while G.checkifVertexExists(source) == 0:
+                source = int(input("Please pick a valid start vertex: "))
+
+            destination = int(input("Pick an end vertex: "))
+            while G.checkifVertexExists(destination) == 0:
+                destination = int(input("Please pick a valid end vertex: "))
+
+            cost = highest_cost_path(G, source, destination, sorted)
+            if cost == float('-inf'):
+                print("There is no walk from ", source," to ", destination)
+            else:
+                print("The  highest cost path between ", source, " and ", destination," is ", cost)
+
+            print("Do you want to go on? \n 0. Yes \n 1. No ")
+            ok = int(input())
+            if ok != 0:
+                over = 1
